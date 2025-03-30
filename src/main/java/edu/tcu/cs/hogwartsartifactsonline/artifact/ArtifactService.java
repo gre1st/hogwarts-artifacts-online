@@ -1,11 +1,9 @@
 package edu.tcu.cs.hogwartsartifactsonline.artifact;
 
-import edu.tcu.cs.hogwartsartifactsonline.artifact.dto.ArtifactDto;
 import edu.tcu.cs.hogwartsartifactsonline.artifact.utils.IdWorker;
+import edu.tcu.cs.hogwartsartifactsonline.system.exception.ObjectNotFoundException;
 import jakarta.transaction.Transactional;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -14,18 +12,17 @@ import java.util.List;
 public class ArtifactService {
 
     private final ArtifactRepository artifactRepository;
-
     private final IdWorker idWorker;
 
+    // This will do the injection
     public ArtifactService(ArtifactRepository artifactRepository, IdWorker idWorker) {
         this.artifactRepository = artifactRepository;
         this.idWorker = idWorker;
     }
 
-
-    public Artifact findById(String artifactId) {
+    public Artifact findById(String artifactId){
         return this.artifactRepository.findById(artifactId)
-                .orElseThrow(()-> new ArtifactNotFoundException(artifactId));
+                .orElseThrow(()-> new ObjectNotFoundException("artifact", artifactId));
     }
 
     public List<Artifact> findAll() {
@@ -33,7 +30,7 @@ public class ArtifactService {
     }
 
     public Artifact save(Artifact newArtifact){
-        newArtifact.setId(idWorker.nextId()+ "");
+        newArtifact.setId(idWorker.nextId() + "");
         return this.artifactRepository.save(newArtifact);
     }
 
@@ -42,17 +39,15 @@ public class ArtifactService {
                 .map(oldArtifact -> {
                     oldArtifact.setName(update.getName());
                     oldArtifact.setDescription(update.getDescription());
-                    oldArtifact.setImageUrl(update.getImageURL());
+                    oldArtifact.setImageUrl(update.getImageUrl());
                     return this.artifactRepository.save(oldArtifact);
                 })
-                .orElseThrow(() -> new ArtifactNotFoundException(artifactId));
+                .orElseThrow(() -> new ObjectNotFoundException("artifact", artifactId));
     }
 
     public void delete(String artifactId){
         this.artifactRepository.findById(artifactId)
-                .orElseThrow(()-> new ArtifactNotFoundException(artifactId));
+                .orElseThrow(() -> new ObjectNotFoundException("artifact", artifactId));
         this.artifactRepository.deleteById(artifactId);
-
     }
-
 }
